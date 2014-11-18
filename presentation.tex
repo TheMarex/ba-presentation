@@ -1,0 +1,55 @@
+%% Encoding: ISO8859-1 %%
+
+% Based on a LaTeX-Beamer template for KIT design by Erik Burger
+% and Christian Hammer with modifications by Christian Henrich
+% and Matthias Gabel, 2014; title picture from website
+
+\documentclass[18pt]{beamer}
+\usetheme{kit}
+
+\usepackage{tikz}
+\usepackage[english]{babel}
+\usetikzlibrary{snakes,arrows,shapes}
+\tikzset{
+  invisible/.style={opacity=0},
+    visible on/.style={alt={#1{}{invisible}}},
+    alt/.code args={<#1>#2#3}{%
+      \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+    },
+}
+
+% Title of work
+\title{Dynamically Stable Walking For Humanoid Bipedal Robots Based On Walking Patterns}
+\subtitle{Bachelor Thesis}
+% Author(s)
+\author{Patrick Niklaus}
+% Institute
+\institute[IAR]{Institute for Anthropomatics and Robotics: High Perfomance Humanoid Technologies Lab}
+
+\begin{document}
+\selectlanguage{english}
+
+% Title page
+\begin{frame}
+ \titlepage
+\end{frame}
+
+% Table of contents
+\frame{
+ \frametitle{Outline}
+ \tableofcontents
+}
+
+\newcommand{\clr}[2]{{\color{#1} #2}}
+
+% Include TITLE.tex
+\include{TITLE}
+
+% References
+\frame{
+ \frametitle{References}
+ \bibliography{literature}
+ \bibliographystyle{plain}
+}
+
+\end{document}
