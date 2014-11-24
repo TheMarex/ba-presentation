@@ -4,10 +4,10 @@ MASTER=presentation
 .PHONY: clean
 
 pdf: presentation.tex content.tex *.bib
-	lualatex $(MASTER).tex
-	bibtex $(MASTER)
-	lualatex $(MASTER).tex
-	lualatex $(MASTER).tex
+	lualatex $(MASTER).tex || true
+	bibtex $(MASTER) || true
+	lualatex $(MASTER).tex || true
+	lualatex $(MASTER).tex || true
 
 content.tex: content.md
 	pandoc content.md -t beamer --slide-level 2 -o content.tex
