@@ -2,11 +2,15 @@
 
 MASTER=presentation
 .PHONY: clean
+.PHONY: quick
 
 pdf: presentation.tex content.tex *.bib
 	lualatex $(MASTER).tex || true
 	bibtex $(MASTER) || true
 	lualatex $(MASTER).tex || true
+	lualatex $(MASTER).tex || true
+
+quick:
 	lualatex $(MASTER).tex || true
 
 content.tex: content.md
