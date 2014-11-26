@@ -12,7 +12,7 @@
   \item
     Little space
   \item
-    Obstacles
+    Obstacles (e.g.~stairs)
   \end{itemize}
 \end{itemize}
 
@@ -34,9 +34,9 @@
   Of primary interest for stability: Number of feet that are in contact
   with ground
 \item
-  \textbf{Walking:} Dual support phase and single support phase.
+  Dual support phase: Shift weight from last support leg to next one
 \item
-  \textbf{Running:} Single support and no ground contact
+  Single support phase: Move swing leg to next foot position
 \end{itemize}
 
 \begin{figure}[b]
@@ -57,12 +57,12 @@
 
   \begin{itemize}
   \item
-    Kinematic structure different: Not clear how to map to robot
+    Kinematic structure and dynamic properties are different: Mapping
+    needs to be found.
   \item
-    Dynamic properties (weight, inertia) different
+    Mapping is computationally expensive (offline), but trajectory looks
+    very natural
   \end{itemize}
-
-  \(\rightarrow\) Might not yield dynamically stable walking at all
 \item
   Derive stable trajectories from dynamic models of the robot:
 
@@ -73,6 +73,8 @@
     Simplification: Height of the CoM is constant with respect to ground
     (only approximately true for humans see Orendurff et al.
     \cite{orendurff2004effect})
+  \item
+    Can be computed online, but looks less natural
   \end{itemize}
 \end{enumerate}
 
@@ -83,32 +85,40 @@ This work is build on the second approach.
 \begin{frame}{3D Linear Inverted Pendulum Model}
 
 \begin{columns}
-\begin{column}{0.5\textwidth}
+\begin{column}{0.55\textwidth}
 \begin{itemize}
 \item Simplified dynamic description of robot
 \item Reduce robot to pendulum with massless rod and point contact
 \item \textit{Linear actuator} in rod of pendulum
-\item Mass of robot gets reduced to the \textit{CoM} (the head of the pendulum)
+\item Mass of robot gets reduced to the \textit{CoM} $c = (c_x, c_y)^T$ (the head of the pendulum)
 \item To make the dynamics \textit{linear} we constrain the head of the pendulum
 to a constant height
 \end{itemize}
+
 \end{column}
 
-\begin{column}{0.5\textwidth}
+\begin{column}{0.45\textwidth}
 \begin{figure}
   \begin{center}
      \includegraphics[width=\textwidth]{images/3dlimp.png}
   \end{center}
 \end{figure}
+
+\vspace{-1.5em}
+Resulting Equation:
+\begin{equation*}
+\ddot{c}_x = \frac{g}{z_c} c_x
+\end{equation*}
+
 \end{column}
 \end{columns}
 
 \end{frame}
 
-\begin{frame}{Zero Moment Point}
+\begin{frame}{Contact forces}
 
-If all contact forces are in the same plane, we can define the
-\emph{Center of Pressure} as:
+We can reduce all contact forces acting on the foot to a single force at
+the \emph{Center of Pressure} which is computed as:
 
 \begin{columns}
 \begin{column}{0.5\textwidth}
@@ -130,9 +140,10 @@ p_x \\ p_y \\ p_z
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  Torque around \(x\) and \(y\) axis at this point is zero
+  If all contact forces are in the same plane: Torque around \(x\) and
+  \(y\) axis at this point is zero
 \item
-  Thus we can call this point the \emph{Zero Moment Point}.
+  Thus we can call this point the \emph{Zero Moment Point} (ZMP).
 \end{itemize}
 
 \end{frame}
@@ -150,8 +161,12 @@ p_x \\ p_y \\ p_z
   foot-floor contact will be preserved.
 \end{enumerate}
 
-We will use \(2.\) to derive dynamically stable trajectories by
-constraining the ZMP to the support polygon.
+Use 2. to derive dynamically stable trajectory by constraining ZMP to
+support polygones:
+
+\begin{figure}[b]
+\includegraphics[width=0.5\textwidth,resolution=300]{images/zmp_steps.png}
+\end{figure}
 
 \end{frame}
 
@@ -168,9 +183,9 @@ constraining the ZMP to the support polygon.
 \end{itemize}
 
 Resulting ZMP:
-\begin{equation} \label{eq:zmp-x}
+\begin{equation*} \label{eq:zmp-x}
 p_x = c_x - \frac{z_c}{g} \ddot{c_x}
-\end{equation}
+\end{equation*}
 \end{column}
 
 \begin{column}{0.5\textwidth}
@@ -215,7 +230,7 @@ p_x = c_x - \frac{z_c}{g} \ddot{c_x}
 
 \begin{figure}
   \begin{center}
-     \includemovie[poster]{6cm}{4cm}{../Videos/10_steps.mp4}
+     \includemovie[poster]{6cm}{4cm}{../Videos/10_steps_unstabilized.mp4}
   \end{center}
 \end{figure}
 
@@ -331,7 +346,7 @@ provide realistic torques.
 
 \section{Push recovery}\label{push-recovery}
 
-\begin{frame}{Capture Point}
+\begin{frame}{Push recovery based on Capture Point}
 
 \begin{itemize}
 \item
@@ -365,6 +380,8 @@ provide realistic torques.
 
 \end{frame}
 
+\section{Conclusion \& Future Work}\label{conclusion-future-work}
+
 \begin{frame}{Implementation}
 
 \begin{itemize}
@@ -386,24 +403,37 @@ provide realistic torques.
 
 \end{frame}
 
-\begin{frame}{Future Work}
+\begin{frame}{Conclusion}
 
-\begin{figure}[b]
-\includegraphics[width=\textwidth,resolution=300]{images/toes.png}
-\end{figure}
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Implemented a \textbf{dynamic simulator} that can test MMM
+  trajectories
+\item
+  \textbf{Verified} walking patterns in dynamic simulation
+\item
+  Implemented multiple \textbf{stabilizers} and tested in simulation
+\item
+  Implemented simple \textbf{push recovery} mechanism based on the
+  Capture Point
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Future Work}
 
 \begin{itemize}
 \item
-  \textbf{Problem:} Constant CoM heigt requires knees to be bend: looks
-  somewhat unnatural.
+  Implement different pattern generation schemes (simple 3D-LIPM based,
+  CP based)
 \item
-  \textbf{Solution:} Add additional DoF in the toe: foot can rotate
-  forward without loosing ground contact
+  Make walking more natural: Use toe joint. \(\rightarrow\) Kajita et
+  al. \cite{kajita2012evaluation} proposed extension of the methodes
+  implemented here to include a toe support phase
 \item
-  Used successfuly in WABIAN or HRP-4C.
-\item
-  Needs adapted stabilizer and pattern generator
-  \cite{kajita2012evaluation}
+  Better push recovery: General case, use extended LIP models proposed
+  by Pratt
 \end{itemize}
 
 \end{frame}

@@ -10,7 +10,7 @@ pdf: presentation.tex content.tex *.bib
 	lualatex $(MASTER).tex || true
 	lualatex $(MASTER).tex || true
 
-quick:
+quick: presentation.tex content.tex
 	lualatex $(MASTER).tex || true
 
 content.tex: content.md

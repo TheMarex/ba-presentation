@@ -2,11 +2,9 @@
 
 ## Why bipedal walking?
 
-<!-- FIXME picture of Armar IV -->
-
 * Robots should be able to navigate in environments made for humans:
     * Little space
-    * Obstacles
+    * Obstacles (e.g. stairs)
 
 $\Rightarrow$ Wheeled base not flexible enough.
 
@@ -15,8 +13,8 @@ $\Rightarrow$ Wheeled base not flexible enough.
 ## The Human Gait
 
 * Of primary interest for stability: Number of feet that are in contact with ground
-* **Walking:** Dual support phase and single support phase.
-* **Running:** Single support and no ground contact
+* Dual support phase: Shift weight from last support leg to next one
+* Single support phase: Move swing leg to next foot position
 
 \begin{figure}[b]
 \includegraphics[width=\textwidth,resolution=300]{images/human_gait.png}
@@ -29,11 +27,9 @@ $\Rightarrow$ Wheeled base not flexible enough.
 
 1. Adapt recorded human motions to robot:
     
-    * Kinematic structure different: Not clear how to map to robot
-    
-    * Dynamic properties (weight, inertia) different
-    
-    $\rightarrow$ Might not yield dynamically stable walking at all
+    * Kinematic structure and dynamic properties are different: Mapping needs to be found.
+
+    * Mapping is computationally expensive (offline), but trajectory looks very natural
 
 2. Derive stable trajectories from dynamic models of the robot:
 	
@@ -41,33 +37,43 @@ $\Rightarrow$ Wheeled base not flexible enough.
 
 	* Simplification: Height of the CoM is constant with respect to ground (only approximately true for humans see Orendurff et al. \cite{orendurff2004effect})
 
+    * Can be computed online, but looks less natural
+
 This work is build on the second approach.
 
 ## 3D Linear Inverted Pendulum Model
 
 \begin{columns}
-\begin{column}{0.5\textwidth}
+\begin{column}{0.55\textwidth}
 \begin{itemize}
 \item Simplified dynamic description of robot
 \item Reduce robot to pendulum with massless rod and point contact
 \item \textit{Linear actuator} in rod of pendulum
-\item Mass of robot gets reduced to the \textit{CoM} (the head of the pendulum)
+\item Mass of robot gets reduced to the \textit{CoM} $c = (c_x, c_y)^T$ (the head of the pendulum)
 \item To make the dynamics \textit{linear} we constrain the head of the pendulum
 to a constant height
 \end{itemize}
+
 \end{column}
 
-\begin{column}{0.5\textwidth}
+\begin{column}{0.45\textwidth}
 \begin{figure}
   \begin{center}
      \includegraphics[width=\textwidth]{images/3dlimp.png}
   \end{center}
 \end{figure}
+
+\vspace{-1.5em}
+Resulting Equation:
+\begin{equation*}
+\ddot{c}_x = \frac{g}{z_c} c_x
+\end{equation*}
+
 \end{column}
 \end{columns}
 
-## Zero Moment Point
-If all contact forces are in the same plane, we can define the *Center of Pressure* as:
+## Contact forces
+We can reduce all contact forces acting on the foot to a single force at the *Center of Pressure* which is computed as:
 
 \begin{columns}
 \begin{column}{0.5\textwidth}
@@ -86,8 +92,8 @@ p_x \\ p_y \\ p_z
 \end{column}
 \end{columns}
 
-* Torque around $x$ and $y$ axis at this point is zero
-* Thus we can call this point the *Zero Moment Point*.
+* If all contact forces are in the same plane: Torque around $x$ and $y$ axis at this point is zero
+* Thus we can call this point the *Zero Moment Point* (ZMP).
 
 ## Why is the ZMP interesting?
 
@@ -96,8 +102,11 @@ p_x \\ p_y \\ p_z
 2. Can be used to derive a *condition to ensure dynamically stable pose*:
       If the ZMP is **strictly inside the support polygon**, the foot-floor contact will be preserved.
 
-We will use $2.$ to derive dynamically stable trajectories by constraining the ZMP
-to the support polygon.
+Use 2. to derive dynamically stable trajectory by constraining ZMP to support polygones:
+
+\begin{figure}[b]
+\includegraphics[width=0.5\textwidth,resolution=300]{images/zmp_steps.png}
+\end{figure}
 
 ## Cart-Table-Model
 
@@ -112,9 +121,9 @@ to the support polygon.
 \end{itemize}
 
 Resulting ZMP:
-\begin{equation} \label{eq:zmp-x}
+\begin{equation*} \label{eq:zmp-x}
 p_x = c_x - \frac{z_c}{g} \ddot{c_x}
-\end{equation}
+\end{equation*}
 \end{column}
 
 \begin{column}{0.5\textwidth}
@@ -145,7 +154,7 @@ p_x = c_x - \frac{z_c}{g} \ddot{c_x}
 
 \begin{figure}
   \begin{center}
-     \includemovie[poster]{6cm}{4cm}{../Videos/10_steps.mp4}
+     \includemovie[poster]{6cm}{4cm}{../Videos/10_steps_unstabilized.mp4}
   \end{center}
 \end{figure}
 
@@ -231,7 +240,7 @@ p_x = c_x - \frac{z_c}{g} \ddot{c_x}
 
 # Push recovery
 
-## Capture Point
+## Push recovery based on Capture Point
 
 * The (immediate) Capture Point is defined as the point on the floor,
   where by placing the base of the pendulum there, the CoM would come to a rest. \cite{koolen2012capturability}
@@ -256,6 +265,8 @@ p_x = c_x - \frac{z_c}{g} \ddot{c_x}
   \caption{Push recovery, standing on left leg.}
 \end{figure}
 
+# Conclusion & Future Work
+
 ## Implementation
 
 * All algorithms implemented independent of the physical simulation (```libBipedal```):
@@ -272,17 +283,20 @@ p_x = c_x - \frac{z_c}{g} \ddot{c_x}
   \end{center}
 \end{figure}
 
+## Conclusion
+
+* Implemented a **dynamic simulator** that can test MMM trajectories
+* **Verified** walking patterns in dynamic simulation
+* Implemented multiple **stabilizers** and tested in simulation
+* Implemented simple **push recovery** mechanism based on the Capture Point
+
 ## Future Work
 
-\begin{figure}[b]
-\includegraphics[width=\textwidth,resolution=300]{images/toes.png}
-\end{figure}
+* Implement different pattern generation schemes (simple 3D-LIPM based, CP based)
 
-* **Problem:** Constant CoM heigt requires knees to be bend: looks somewhat unnatural.
+* Make walking more natural: Use toe joint.
+  $\rightarrow$ Kajita et al. \cite{kajita2012evaluation} proposed extension of the
+  methodes implemented here to include a toe support phase
 
-* **Solution:** Add additional DoF in the toe: foot can rotate forward without loosing ground contact
-
-* Used successfuly in WABIAN or HRP-4C.
-
-* Needs adapted stabilizer and pattern generator \cite{kajita2012evaluation}
+* Better push recovery: General case, use extended LIP models proposed by Pratt
 
